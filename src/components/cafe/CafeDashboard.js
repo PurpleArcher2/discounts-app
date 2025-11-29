@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import {
-  LogOut,
-  Coffee,
-  Settings as SettingsIcon,
-  Percent,
-  Smile,
-} from "lucide-react";
+import { LogOut, Coffee, Settings, Percent, Smile, Home } from "lucide-react";
 import {
   getCafeById,
   getDiscountsByCafe,
@@ -84,9 +78,9 @@ const CafeDashboard = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center">
         <div className="text-center">
-          <Coffee className="w-16 h-16 text-purple-600 mx-auto mb-4 animate-pulse" />
+          <Coffee className="w-16 h-16 text-emerald-600 mx-auto mb-4 animate-pulse" />
           <p className="text-gray-600">Loading your cafe...</p>
         </div>
       </div>
@@ -96,7 +90,7 @@ const CafeDashboard = () => {
   // Error state
   if (error || !currentCafe) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center p-4">
         <div className="text-center max-w-md bg-white p-8 rounded-xl shadow-md">
           <Coffee className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -104,7 +98,7 @@ const CafeDashboard = () => {
           </h2>
           <button
             onClick={handleLogout}
-            className="w-full px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all"
+            className="w-full px-6 py-2 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all"
           >
             Back to Login
           </button>
@@ -115,27 +109,36 @@ const CafeDashboard = () => {
 
   // Main dashboard
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg sticky top-0 z-30">
+      <header className="bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white shadow-lg sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Coffee className="w-8 h-8" />
               <div>
                 <h1 className="text-2xl font-bold">{currentCafe.name}</h1>
-                <p className="text-sm text-purple-100">
+                <p className="text-sm text-emerald-100">
                   Owner: {currentUser.name}
                 </p>
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>Logout</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate("/")}
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
+              >
+                <Home className="w-5 h-5" />
+                <span className="hidden sm:inline">Home</span>
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -148,7 +151,7 @@ const CafeDashboard = () => {
               onClick={() => setActiveTab("mood")}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
                 activeTab === "mood"
-                  ? "border-purple-600 text-purple-600 font-medium"
+                  ? "border-emerald-600 text-emerald-600 font-medium"
                   : "border-transparent text-gray-600 hover:text-gray-800"
               }`}
             >
@@ -159,7 +162,7 @@ const CafeDashboard = () => {
               onClick={() => setActiveTab("discounts")}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
                 activeTab === "discounts"
-                  ? "border-purple-600 text-purple-600 font-medium"
+                  ? "border-emerald-600 text-emerald-600 font-medium"
                   : "border-transparent text-gray-600 hover:text-gray-800"
               }`}
             >
@@ -170,11 +173,11 @@ const CafeDashboard = () => {
               onClick={() => setActiveTab("settings")}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
                 activeTab === "settings"
-                  ? "border-purple-600 text-purple-600 font-medium"
+                  ? "border-emerald-600 text-emerald-600 font-medium"
                   : "border-transparent text-gray-600 hover:text-gray-800"
               }`}
             >
-              <SettingsIcon className="w-5 h-5" />
+              <Settings className="w-5 h-5" />
               <span>Cafe Settings</span>
             </button>
           </div>

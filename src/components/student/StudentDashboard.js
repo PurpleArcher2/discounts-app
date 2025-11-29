@@ -11,9 +11,8 @@ import {
   Briefcase,
   Tag,
   Smartphone,
-  Monitor,
+  Home,
 } from "lucide-react";
-import QRCode from "react-qr-code";
 import {
   getAllCafes,
   getActiveDiscountForCafe,
@@ -30,18 +29,14 @@ const StudentDashboard = () => {
   useEffect(() => {
     loadCafes();
     checkIfMobile();
-
-    // Listen for window resize
-    window.addEventListener("resize", checkIfMobile);
-    return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
 
   const checkIfMobile = () => {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const mobileRegex =
+      /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
     const mobile =
-      window.innerWidth < 768 ||
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      );
+      mobileRegex.test(userAgent.toLowerCase()) || window.innerWidth < 768;
     setIsMobile(mobile);
   };
 
@@ -90,55 +85,17 @@ const StudentDashboard = () => {
     );
   };
 
-  const getMoodStyles = (mood) => {
-    switch (mood) {
-      case "Calm":
-        return "bg-green-100 border-green-300 text-green-700";
-      case "Moderate":
-        return "bg-orange-100 border-orange-300 text-orange-700";
-      case "Crowded":
-        return "bg-red-100 border-red-300 text-red-700";
-      default:
-        return "bg-gray-100 border-gray-300 text-gray-700";
-    }
-  };
-
-  const getMoodEmoji = (mood) => {
-    switch (mood) {
-      case "Calm":
-        return "😊";
-      case "Moderate":
-        return "🙂";
-      case "Crowded":
-        return "😓";
-      default:
-        return "😊";
-    }
-  };
-
-  const qrData = selectedCafe
-    ? JSON.stringify({
-        cafeID: selectedCafe.cafeID,
-        cafeName: selectedCafe.name,
-        discountID: selectedCafe.userDiscount?.discountID,
-        discountPercentage: selectedCafe.userDiscount?.percentage,
-        userID: currentUser.userID,
-        userType: currentUser.userType,
-        timestamp: new Date().toISOString(),
-      })
-    : "";
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg sticky top-0 z-30">
+      <header className="bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white shadow-lg sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Coffee className="w-8 h-8" />
               <div>
-                <h1 className="text-2xl font-bold">Campus Discounts</h1>
-                <div className="flex items-center gap-2 text-sm text-purple-100">
+                <h1 className="text-2xl font-bold">Available Discounts</h1>
+                <div className="flex items-center gap-2 text-sm text-emerald-100">
                   {getUserTypeIcon()}
                   <span>
                     {getUserTypeLabel()}: {currentUser.name}
@@ -146,13 +103,22 @@ const StudentDashboard = () => {
                 </div>
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>Logout</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate("/")}
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
+              >
+                <Home className="w-5 h-5" />
+                <span className="hidden sm:inline">Home</span>
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -167,17 +133,35 @@ const StudentDashboard = () => {
           </p>
         </div>
 
+        {/* Mobile Notice */}
+        {!isMobile && (
+          <div className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <Smartphone className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-bold text-gray-800 mb-1">
+                  Mobile Required for QR Codes
+                </h3>
+                <p className="text-sm text-gray-600">
+                  To claim discounts, please open this page on your mobile
+                  device to scan QR codes at the cafe.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Cafes Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {cafes.map((cafe) => (
             <div
               key={cafe.cafeID}
               className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all ${
-                cafe.userDiscount ? "ring-2 ring-purple-400" : ""
+                cafe.userDiscount ? "ring-2 ring-emerald-400" : ""
               }`}
             >
               {/* Cafe Photo */}
-              <div className="h-48 bg-gradient-to-br from-purple-100 to-blue-100 relative flex items-center justify-center">
+              <div className="h-48 bg-gray-200 relative">
                 {cafe.photo ? (
                   <img
                     src={cafe.photo}
@@ -185,26 +169,13 @@ const StudentDashboard = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <Coffee className="w-16 h-16 text-purple-400" />
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Coffee className="w-16 h-16 text-gray-400" />
+                  </div>
                 )}
 
-                {/* Mood Badge */}
-                <div className="absolute top-3 left-3">
-                  <div
-                    className={`px-3 py-2 rounded-lg border-2 font-medium text-sm flex items-center gap-2 backdrop-blur-sm ${getMoodStyles(
-                      cafe.currentMood
-                    )}`}
-                  >
-                    <span className="text-lg">
-                      {getMoodEmoji(cafe.currentMood)}
-                    </span>
-                    <span>{cafe.currentMood}</span>
-                  </div>
-                </div>
-
-                {/* Discount Badge */}
                 {cafe.userDiscount && (
-                  <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-2 rounded-lg shadow-lg">
+                  <div className="absolute top-3 right-3 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white px-3 py-2 rounded-lg shadow-lg">
                     <span className="text-2xl font-bold">
                       {cafe.userDiscount.percentage}%
                     </span>
@@ -212,7 +183,6 @@ const StudentDashboard = () => {
                   </div>
                 )}
 
-                {/* "Other Discounts Available" Badge */}
                 {!cafe.userDiscount && cafe.hasAnyDiscount && (
                   <div className="absolute top-3 right-3 bg-gray-700 text-white px-3 py-2 rounded-lg shadow-lg">
                     <Tag className="w-5 h-5 mx-auto mb-1" />
@@ -238,17 +208,17 @@ const StudentDashboard = () => {
 
                 {/* Discount Info */}
                 {cafe.userDiscount ? (
-                  <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                    <div className="flex items-center gap-2 text-purple-700 mb-1">
+                  <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-emerald-700 mb-1">
                       <Percent className="w-4 h-4" />
                       <span className="font-bold">
                         {cafe.userDiscount.percentage}% Discount
                       </span>
                     </div>
-                    <p className="text-sm text-purple-600">
+                    <p className="text-sm text-emerald-600">
                       {cafe.userDiscount.description}
                     </p>
-                    <p className="text-xs text-purple-500 mt-1">
+                    <p className="text-xs text-emerald-500 mt-1">
                       Valid until:{" "}
                       {new Date(
                         cafe.userDiscount.validUntil
@@ -271,13 +241,22 @@ const StudentDashboard = () => {
 
                 {/* Action Buttons */}
                 {cafe.userDiscount ? (
-                  <button
-                    onClick={() => handleShowQR(cafe)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium"
-                  >
-                    <QrCode className="w-5 h-5" />
-                    <span>Show QR Code</span>
-                  </button>
+                  isMobile ? (
+                    <button
+                      onClick={() => handleShowQR(cafe)}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all font-medium"
+                    >
+                      <QrCode className="w-5 h-5" />
+                      <span>Show QR Code</span>
+                    </button>
+                  ) : (
+                    <div className="w-full p-3 bg-amber-50 border border-amber-200 rounded-lg text-center">
+                      <Smartphone className="w-5 h-5 text-amber-600 mx-auto mb-1" />
+                      <p className="text-xs text-amber-700 font-medium">
+                        Open on mobile to view QR code
+                      </p>
+                    </div>
+                  )
                 ) : (
                   <button
                     disabled
@@ -318,35 +297,29 @@ const StudentDashboard = () => {
         )}
       </main>
 
-      {/* QR Code Modal - Mobile Only */}
+      {/* QR Code Modal - Only on Mobile */}
       {selectedCafe && isMobile && (
         <div
           className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedCafe(null)}
         >
-          <div
-            className="bg-white rounded-2xl p-8 max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full">
             <div className="text-center">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
                 {selectedCafe.name}
               </h2>
-              <div className="text-4xl font-bold text-purple-600 mb-4">
+              <div className="text-4xl font-bold bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 bg-clip-text text-transparent mb-4">
                 {selectedCafe.userDiscount.percentage}% OFF
               </div>
               <p className="text-gray-600 mb-6">
                 {selectedCafe.userDiscount.description}
               </p>
 
-              {/* QR Code */}
-              <div className="bg-white p-6 rounded-lg mb-6 flex justify-center">
-                <QRCode
-                  value={qrData}
-                  size={200}
-                  level="H"
-                  className="mx-auto"
-                />
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-8 rounded-lg mb-6 border-2 border-emerald-200">
+                <QrCode className="w-32 h-32 mx-auto text-emerald-600" />
+                <p className="text-sm text-emerald-700 mt-4 font-medium">
+                  Show this to the cashier
+                </p>
               </div>
 
               <div className="text-sm text-gray-500 mb-4">
@@ -356,73 +329,11 @@ const StudentDashboard = () => {
                 ).toLocaleString()}
               </div>
 
-              <p className="text-xs text-gray-500 mb-4">
-                Show this QR code to the cashier to redeem your discount
-              </p>
-
               <button
                 onClick={() => setSelectedCafe(null)}
-                className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all font-medium"
+                className="w-full px-6 py-3 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all font-medium"
               >
                 Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Desktop Warning Modal */}
-      {selectedCafe && !isMobile && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedCafe(null)}
-        >
-          <div
-            className="bg-white rounded-2xl p-8 max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="text-center">
-              <Monitor className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                Mobile Device Required
-              </h2>
-              <p className="text-gray-600 mb-6">
-                QR codes can only be displayed on mobile devices. Please open
-                this page on your phone to view and redeem your discount.
-              </p>
-
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <Smartphone className="w-5 h-5 text-blue-600" />
-                  <p className="text-sm font-semibold text-blue-800">
-                    How to access on mobile:
-                  </p>
-                </div>
-                <ol className="text-left text-sm text-blue-700 space-y-2">
-                  <li>1. Open your browser on your phone</li>
-                  <li>2. Navigate to this website</li>
-                  <li>3. Log in with your account</li>
-                  <li>4. Click "Show QR Code" for any cafe</li>
-                </ol>
-              </div>
-
-              <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                <p className="text-sm text-gray-700 mb-2">
-                  <strong>{selectedCafe.name}</strong>
-                </p>
-                <p className="text-2xl font-bold text-purple-600 mb-1">
-                  {selectedCafe.userDiscount.percentage}% OFF
-                </p>
-                <p className="text-xs text-gray-600">
-                  {selectedCafe.userDiscount.description}
-                </p>
-              </div>
-
-              <button
-                onClick={() => setSelectedCafe(null)}
-                className="w-full px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all font-medium"
-              >
-                Got it
               </button>
             </div>
           </div>

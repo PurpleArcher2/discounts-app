@@ -10,6 +10,7 @@ import {
   User,
   Briefcase,
   ShoppingBag,
+  Home,
 } from "lucide-react";
 
 const Login = () => {
@@ -68,11 +69,20 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center px-4 py-8">
+      {/* Back to Home Button */}
+      <button
+        onClick={() => navigate("/")}
+        className="fixed top-4 left-4 flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 rounded-lg shadow-md transition-all text-gray-700 font-medium"
+      >
+        <Home className="w-5 h-5" />
+        <span className="hidden sm:inline">Back to Home</span>
+      </button>
+
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 via-green-600 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Coffee className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -104,7 +114,7 @@ const Login = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 placeholder="your.email@example.com"
                 required
               />
@@ -124,7 +134,7 @@ const Login = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 placeholder="••••••••"
                 required
               />
@@ -135,7 +145,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <LogIn className="w-5 h-5" />
             <span>{loading ? "Signing in..." : "Sign In"}</span>
@@ -148,7 +158,7 @@ const Login = () => {
             Don't have an account?{" "}
             <Link
               to="/signup"
-              className="text-purple-600 hover:text-purple-700 font-medium"
+              className="text-emerald-600 hover:text-emerald-700 font-medium"
             >
               Sign Up
             </Link>
@@ -156,7 +166,7 @@ const Login = () => {
         </div>
 
         {/* Demo Accounts */}
-        <div className="mt-6 p-4 bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
+        <div className="mt-6 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg">
           <p className="text-sm font-bold text-gray-800 mb-3 text-center">
             🎭 Demo Accounts - Click to Auto-Fill
           </p>
@@ -164,10 +174,10 @@ const Login = () => {
           {/* Student Account */}
           <button
             onClick={() => quickLogin("student@campus.com", "student123")}
-            className="w-full mb-2 p-3 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg transition-all text-left"
+            className="w-full mb-2 p-3 bg-white hover:bg-emerald-50 border border-emerald-200 rounded-lg transition-all text-left"
           >
             <div className="flex items-center gap-3">
-              <User className="w-5 h-5 text-purple-600" />
+              <User className="w-5 h-5 text-emerald-600" />
               <div>
                 <p className="text-sm font-semibold text-gray-800">
                   Student Account
@@ -182,10 +192,10 @@ const Login = () => {
           {/* Staff Account */}
           <button
             onClick={() => quickLogin("staff@campus.com", "staff123")}
-            className="w-full mb-2 p-3 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg transition-all text-left"
+            className="w-full mb-2 p-3 bg-white hover:bg-green-50 border border-green-200 rounded-lg transition-all text-left"
           >
             <div className="flex items-center gap-3">
-              <Briefcase className="w-5 h-5 text-blue-600" />
+              <Briefcase className="w-5 h-5 text-green-600" />
               <div>
                 <p className="text-sm font-semibold text-gray-800">
                   Staff Account
@@ -198,7 +208,7 @@ const Login = () => {
           </button>
 
           {/* Cafe Accounts */}
-          <div className="mt-3 pt-3 border-t border-purple-200">
+          <div className="mt-3 pt-3 border-t border-emerald-200">
             <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
               <ShoppingBag className="w-4 h-4" />
               Cafe Owner Accounts:
@@ -217,7 +227,7 @@ const Login = () => {
                   onClick={() =>
                     quickLogin(`cafe${cafe.num}@campus.com`, "cafe123")
                   }
-                  className="p-2 bg-white hover:bg-green-50 border border-green-200 rounded text-left transition-all"
+                  className="p-2 bg-white hover:bg-teal-50 border border-teal-200 rounded text-left transition-all"
                 >
                   <p className="text-xs font-medium text-gray-800">
                     {cafe.name}

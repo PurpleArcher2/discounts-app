@@ -134,12 +134,12 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 via-green-600 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <Coffee className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -167,11 +167,11 @@ const Signup = () => {
                 onClick={() => setUserType("student")}
                 className={`p-4 rounded-lg border-2 transition-all ${
                   userType === "student"
-                    ? "border-blue-600 bg-blue-50"
+                    ? "border-emerald-600 bg-emerald-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <User className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                <User className="w-8 h-8 mx-auto mb-2 text-emerald-600" />
                 <p className="font-medium text-gray-800 text-sm">Student</p>
                 <p className="text-xs text-gray-500 mt-1">Access discounts</p>
               </button>
@@ -195,11 +195,11 @@ const Signup = () => {
                 onClick={() => setUserType("cafe")}
                 className={`p-4 rounded-lg border-2 transition-all ${
                   userType === "cafe"
-                    ? "border-purple-600 bg-purple-50"
+                    ? "border-teal-600 bg-teal-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <Coffee className="w-8 h-8 mx-auto mb-2 text-purple-600" />
+                <Coffee className="w-8 h-8 mx-auto mb-2 text-teal-600" />
                 <p className="font-medium text-gray-800 text-sm">Cafe Owner</p>
                 <p className="text-xs text-gray-500 mt-1">Offer discounts</p>
               </button>
@@ -221,7 +221,7 @@ const Signup = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   placeholder="John Doe"
                   required
                 />
@@ -240,7 +240,7 @@ const Signup = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   placeholder="your.email@example.com"
                   required
                 />
@@ -259,7 +259,7 @@ const Signup = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   placeholder="••••••••"
                   required
                 />
@@ -281,7 +281,7 @@ const Signup = () => {
                       confirmPassword: e.target.value,
                     })
                   }
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   placeholder="••••••••"
                   required
                 />
@@ -301,7 +301,7 @@ const Signup = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, studentID: e.target.value })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="e.g., 2024123456"
                     required
                   />
@@ -312,7 +312,7 @@ const Signup = () => {
                     Upload Student ID Photo
                   </label>
                   <label className="cursor-pointer">
-                    <div className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-all flex items-center justify-center gap-2">
+                    <div className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-emerald-400 transition-all flex items-center justify-center gap-2">
                       <Upload className="w-5 h-5 text-gray-400" />
                       <span className="text-gray-600">
                         {formData.studentIDPhoto
@@ -352,7 +352,7 @@ const Signup = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, staffID: e.target.value })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="e.g., STAFF-2024-001"
                     required
                   />
@@ -403,7 +403,7 @@ const Signup = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, cafeName: e.target.value })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     placeholder="My Awesome Cafe"
                     required
                   />
@@ -422,7 +422,7 @@ const Signup = () => {
                         cafeLocation: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     placeholder="e.g., Main Building, 1st Floor"
                     required
                   />
@@ -443,7 +443,7 @@ const Signup = () => {
                           cafeAddress: e.target.value,
                         })
                       }
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       placeholder="123 University Ave, City, State 12345"
                     />
                   </div>
@@ -454,7 +454,7 @@ const Signup = () => {
                     Upload Cafe Photo (Optional)
                   </label>
                   <label className="cursor-pointer">
-                    <div className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-400 transition-all flex items-center justify-center gap-2">
+                    <div className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-teal-400 transition-all flex items-center justify-center gap-2">
                       <Upload className="w-5 h-5 text-gray-400" />
                       <span className="text-gray-600">
                         {formData.cafePhoto
@@ -484,7 +484,7 @@ const Signup = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <UserPlus className="w-5 h-5" />
               <span>{loading ? "Creating Account..." : "Create Account"}</span>
@@ -497,7 +497,7 @@ const Signup = () => {
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="text-purple-600 hover:text-purple-700 font-medium"
+                className="text-emerald-600 hover:text-emerald-700 font-medium"
               >
                 Sign In
               </Link>

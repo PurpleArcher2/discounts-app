@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
+import LandingPage from "./components/LandingPage";
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 import StudentDashboard from "./components/student/StudentDashboard";
@@ -16,32 +17,45 @@ import { PendingApproval } from "./components/approvals/PendingApproval";
 import { PendingVerification } from "./components/approvals/PendingVerification";
 
 // Protected Route
-const ProtectedRoute = ({ children, allowedUserType }) => {
+const ProtectedRoute = ({ children, allowedUserTypes }) => {
   const { currentUser } = useAuth();
 
   if (!currentUser) return <Navigate to="/login" replace />;
 
-  if (allowedUserType && currentUser.userType !== allowedUserType) {
-    const redirectPath =
-      currentUser.userType === "student"
-        ? "/student/dashboard"
-        : "/cafe/dashboard";
-    return <Navigate to={redirectPath} replace />;
+  // Check if allowedUserTypes is provided and if current user is allowed
+  if (allowedUserTypes && !allowedUserTypes.includes(currentUser.userType)) {
+    // Redirect based on user type
+    if (currentUser.userType === "admin") {
+      return <Navigate to="/admin" replace />;
+    } else if (
+      currentUser.userType === "student" ||
+      currentUser.userType === "staff"
+    ) {
+      return <Navigate to="/student/dashboard" replace />;
+    } else if (currentUser.userType === "cafe") {
+      return <Navigate to="/cafe/dashboard" replace />;
+    }
   }
 
   return children;
 };
 
-// Public Route
+// Public Route - redirects logged-in users away from login/signup
 const PublicRoute = ({ children }) => {
   const { currentUser } = useAuth();
 
   if (currentUser) {
-    const redirectPath =
-      currentUser.userType === "student"
-        ? "/student/dashboard"
-        : "/cafe/dashboard";
-    return <Navigate to={redirectPath} replace />;
+    // Redirect based on user type
+    if (currentUser.userType === "admin") {
+      return <Navigate to="/admin" replace />;
+    } else if (
+      currentUser.userType === "student" ||
+      currentUser.userType === "staff"
+    ) {
+      return <Navigate to="/student/dashboard" replace />;
+    } else if (currentUser.userType === "cafe") {
+      return <Navigate to="/cafe/dashboard" replace />;
+    }
   }
 
   return children;
@@ -50,12 +64,10 @@ const PublicRoute = ({ children }) => {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      {/* Landing page - accessible to everyone */}
+      <Route path="/" element={<LandingPage />} />
 
-      <Route path="/admin" element={<AdminDashboard />} />
-      <Route path="/pending-verification" element={<PendingVerification />} />
-      <Route path="/pending-approval" element={<PendingApproval />} />
-
+      {/* Public routes */}
       <Route
         path="/login"
         element={
@@ -73,24 +85,41 @@ function AppRoutes() {
         }
       />
 
+      {/* Special status pages */}
+      <Route path="/pending-verification" element={<PendingVerification />} />
+      <Route path="/pending-approval" element={<PendingApproval />} />
+
+      {/* Protected routes */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedUserTypes={["admin"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Student Dashboard - accessible by both students AND staff */}
       <Route
         path="/student/dashboard"
         element={
-          <ProtectedRoute allowedUserType="student">
+          <ProtectedRoute allowedUserTypes={["student", "staff"]}>
             <StudentDashboard />
           </ProtectedRoute>
         }
       />
 
+      {/* Cafe Dashboard - only for cafe owners */}
       <Route
         path="/cafe/dashboard"
         element={
-          <ProtectedRoute allowedUserType="cafe">
+          <ProtectedRoute allowedUserTypes={["cafe"]}>
             <CafeDashboard />
           </ProtectedRoute>
         }
       />
 
+      {/* Catch all - redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
