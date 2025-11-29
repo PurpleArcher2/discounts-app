@@ -31,13 +31,13 @@ const DiscountManager = ({ cafeID, discounts = [], onDiscountsChange }) => {
         // Update existing discount
         await updateDiscount(editingDiscount.discountID, formData);
       } else {
-        // Create new discount - ADD the applicableFor parameter
+        // Create new discount with applicableFor parameter
         await createDiscount(
           cafeID,
           formData.percentage,
           formData.description,
           formData.validUntil,
-          ["student", "staff"] // ADD THIS LINE - default to both user types
+          ["student", "staff"] // Added this parameter
         );
       }
 
@@ -45,7 +45,11 @@ const DiscountManager = ({ cafeID, discounts = [], onDiscountsChange }) => {
       setFormData({ percentage: "", description: "", validUntil: "" });
       setShowForm(false);
       setEditingDiscount(null);
-      onDiscountsChange();
+
+      // Call the callback to refresh data
+      if (typeof onDiscountsChange === "function") {
+        onDiscountsChange();
+      }
     } catch (error) {
       console.error("Failed to save discount:", error);
       alert("Failed to save discount. Please try again.");
@@ -66,7 +70,9 @@ const DiscountManager = ({ cafeID, discounts = [], onDiscountsChange }) => {
     if (window.confirm("Are you sure you want to delete this discount?")) {
       try {
         await deleteDiscount(discountID);
-        onDiscountsChange();
+        if (typeof onDiscountsChange === "function") {
+          onDiscountsChange();
+        }
       } catch (error) {
         console.error("Failed to delete discount:", error);
         alert("Failed to delete discount. Please try again.");
@@ -79,7 +85,9 @@ const DiscountManager = ({ cafeID, discounts = [], onDiscountsChange }) => {
       await updateDiscount(discount.discountID, {
         isActive: !discount.isActive,
       });
-      onDiscountsChange();
+      if (typeof onDiscountsChange === "function") {
+        onDiscountsChange();
+      }
     } catch (error) {
       console.error("Failed to toggle discount:", error);
     }

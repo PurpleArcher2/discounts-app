@@ -7,9 +7,9 @@ import {
   Settings as SettingsIcon,
   Percent,
 } from "lucide-react";
-import { getCafeById } from "../utils/storage";
+import { getCafeById, getDiscountsByCafe } from "../utils/storage";
 
-// Import components - comment these out if they cause errors
+// Import components
 import CafeSettings from "./CafeSettings";
 import DiscountManager from "./DiscountManager";
 
@@ -17,6 +17,7 @@ const CafeDashboard = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const [currentCafe, setCurrentCafe] = useState(null);
+  const [discounts, setDiscounts] = useState([]);
   const [activeTab, setActiveTab] = useState("discounts");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -56,6 +57,11 @@ const CafeDashboard = () => {
       }
 
       setCurrentCafe(cafe);
+
+      // Load discounts
+      const cafeDiscounts = getDiscountsByCafe(cafe.cafeID);
+      setDiscounts(cafeDiscounts);
+
       setLoading(false);
     } catch (err) {
       console.error("Error loading cafe:", err);
@@ -176,22 +182,15 @@ const CafeDashboard = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
         {activeTab === "discounts" && (
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Discount Manager
-            </h2>
-            <p className="text-gray-600 mb-4">Cafe ID: {currentCafe.cafeID}</p>
-            <DiscountManager cafeID={currentCafe.cafeID} />
-          </div>
+          <DiscountManager
+            cafeID={currentCafe.cafeID}
+            discounts={discounts}
+            onDiscountsChange={loadCafeData}
+          />
         )}
 
         {activeTab === "settings" && (
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Cafe Settings
-            </h2>
-            <CafeSettings cafe={currentCafe} onUpdate={loadCafeData} />
-          </div>
+          <CafeSettings cafe={currentCafe} onUpdate={loadCafeData} />
         )}
       </main>
     </div>
