@@ -6,10 +6,14 @@ import {
   Coffee,
   Settings as SettingsIcon,
   Percent,
+  Smile,
 } from "lucide-react";
-import { getCafeById, getDiscountsByCafe } from "../utils/storage";
-
-// Import components
+import {
+  getCafeById,
+  getDiscountsByCafe,
+  updateCafeMood,
+} from "../utils/storage";
+import MoodSelector from "./MoodSelector";
 import CafeSettings from "./CafeSettings";
 import DiscountManager from "./DiscountManager";
 
@@ -18,37 +22,29 @@ const CafeDashboard = () => {
   const navigate = useNavigate();
   const [currentCafe, setCurrentCafe] = useState(null);
   const [discounts, setDiscounts] = useState([]);
-  const [activeTab, setActiveTab] = useState("discounts");
+  const [activeTab, setActiveTab] = useState("mood");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log("CafeDashboard mounted");
-    console.log("Current user:", currentUser);
     loadCafeData();
   }, [currentUser]);
 
   const loadCafeData = () => {
     try {
-      console.log("Loading cafe data...");
-
       if (!currentUser) {
-        console.log("No current user");
         setLoading(false);
         setError("No user logged in");
         return;
       }
 
       if (!currentUser.cafeID) {
-        console.log("User has no cafeID:", currentUser);
         setLoading(false);
         setError("No cafe associated with this account");
         return;
       }
 
-      console.log("Fetching cafe with ID:", currentUser.cafeID);
       const cafe = getCafeById(currentUser.cafeID);
-      console.log("Cafe found:", cafe);
 
       if (!cafe) {
         setError("Cafe not found in database");
@@ -70,6 +66,16 @@ const CafeDashboard = () => {
     }
   };
 
+  const handleMoodChange = async (newMood) => {
+    try {
+      const updatedCafe = updateCafeMood(currentCafe.cafeID, newMood);
+      setCurrentCafe(updatedCafe);
+    } catch (error) {
+      console.error("Failed to update mood:", error);
+      alert("Failed to update cafe mood");
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -82,9 +88,6 @@ const CafeDashboard = () => {
         <div className="text-center">
           <Coffee className="w-16 h-16 text-purple-600 mx-auto mb-4 animate-pulse" />
           <p className="text-gray-600">Loading your cafe...</p>
-          <p className="text-xs text-gray-400 mt-2">
-            User: {currentUser?.email}
-          </p>
         </div>
       </div>
     );
@@ -99,18 +102,6 @@ const CafeDashboard = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
             {error || "Cafe Not Found"}
           </h2>
-          <div className="text-left bg-gray-50 p-4 rounded-lg mb-4">
-            <p className="text-sm text-gray-600 mb-2">Debug Info:</p>
-            <p className="text-xs text-gray-500">
-              User ID: {currentUser?.userID}
-            </p>
-            <p className="text-xs text-gray-500">
-              Cafe ID: {currentUser?.cafeID || "None"}
-            </p>
-            <p className="text-xs text-gray-500">
-              User Type: {currentUser?.userType}
-            </p>
-          </div>
           <button
             onClick={handleLogout}
             className="w-full px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all"
@@ -154,6 +145,17 @@ const CafeDashboard = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-4">
             <button
+              onClick={() => setActiveTab("mood")}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
+                activeTab === "mood"
+                  ? "border-purple-600 text-purple-600 font-medium"
+                  : "border-transparent text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              <Smile className="w-5 h-5" />
+              <span>Cafe Mood</span>
+            </button>
+            <button
               onClick={() => setActiveTab("discounts")}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
                 activeTab === "discounts"
@@ -181,6 +183,13 @@ const CafeDashboard = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
+        {activeTab === "mood" && (
+          <MoodSelector
+            currentMood={currentCafe.currentMood}
+            onMoodChange={handleMoodChange}
+          />
+        )}
+
         {activeTab === "discounts" && (
           <DiscountManager
             cafeID={currentCafe.cafeID}

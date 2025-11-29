@@ -10,27 +10,227 @@ const STORAGE_KEYS = {
   PENDING_CAFES: "discount_pending_cafes",
 };
 
-// Initialize with empty data - NO DEFAULTS
-// Create ONE admin account on first initialization
+// Initialize with fixed demo accounts and Lebanese cafes
 const initializeData = () => {
   if (localStorage.getItem(STORAGE_KEYS.INITIALIZED)) {
     return;
   }
 
-  // Create admin user
-  const adminUser = {
-    userID: "admin_default",
-    email: "admin@campus.com",
-    password: "admin123", // Change this in production!
-    name: "System Administrator",
-    userType: "admin",
-    cafeID: null,
-    createdAt: new Date().toISOString(),
-  };
+  // Create fixed demo accounts
+  const demoUsers = [
+    {
+      userID: "admin_default",
+      email: "admin@campus.com",
+      password: "admin123",
+      name: "System Administrator",
+      userType: "admin",
+      cafeID: null,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      userID: "student_demo",
+      email: "student@campus.com",
+      password: "student123",
+      name: "Ahmad Hassan",
+      userType: "student",
+      cafeID: null,
+      studentID: "STU2024001",
+      studentIDPhoto: null,
+      verified: true,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      userID: "staff_demo",
+      email: "staff@campus.com",
+      password: "staff123",
+      name: "Layla Khoury",
+      userType: "staff",
+      cafeID: null,
+      verified: true,
+      createdAt: new Date().toISOString(),
+    },
+  ];
 
-  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify([adminUser]));
-  localStorage.setItem(STORAGE_KEYS.CAFES, JSON.stringify([]));
-  localStorage.setItem(STORAGE_KEYS.DISCOUNTS, JSON.stringify([]));
+  // Lebanese cafes with owners and real images
+  const lebaneseCafes = [
+    {
+      cafeID: "cafe_1",
+      name: "Café Younes",
+      photo:
+        "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80",
+      location: "Hamra, Beirut",
+      address: "Hamra Street, Beirut, Lebanon",
+      lat: null,
+      lng: null,
+      currentMood: "Calm",
+      ownerID: "owner_1",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      cafeID: "cafe_2",
+      name: "T-Marbouta",
+      photo:
+        "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=800&q=80",
+      location: "Mar Mikhael, Beirut",
+      address: "Mar Mikhael, Beirut, Lebanon",
+      lat: null,
+      lng: null,
+      currentMood: "Moderate",
+      ownerID: "owner_2",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      cafeID: "cafe_3",
+      name: "Kalei Coffee Co.",
+      photo:
+        "https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=800&q=80",
+      location: "Saifi Village, Beirut",
+      address: "Saifi Village, Beirut, Lebanon",
+      lat: null,
+      lng: null,
+      currentMood: "Crowded",
+      ownerID: "owner_3",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      cafeID: "cafe_4",
+      name: "Café de Prague",
+      photo:
+        "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80",
+      location: "Achrafieh, Beirut",
+      address: "Achrafieh, Beirut, Lebanon",
+      lat: null,
+      lng: null,
+      currentMood: "Calm",
+      ownerID: "owner_4",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      cafeID: "cafe_5",
+      name: "Tawlet",
+      photo:
+        "https://images.unsplash.com/photo-1511081692775-05d0f180a065?w=800&q=80",
+      location: "Mar Mikhael, Beirut",
+      address: "Mar Mikhael, Beirut, Lebanon",
+      lat: null,
+      lng: null,
+      currentMood: "Moderate",
+      ownerID: "owner_5",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      cafeID: "cafe_6",
+      name: "Urbanista",
+      photo:
+        "https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=800&q=80",
+      location: "Gemmayze, Beirut",
+      address: "Gemmayze, Beirut, Lebanon",
+      lat: null,
+      lng: null,
+      currentMood: "Crowded",
+      ownerID: "owner_6",
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  // Cafe owners
+  const cafeOwners = [
+    {
+      userID: "owner_1",
+      email: "cafe1@campus.com",
+      password: "cafe123",
+      name: "Café Younes Manager",
+      userType: "cafe",
+      cafeID: "cafe_1",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      userID: "owner_2",
+      email: "cafe2@campus.com",
+      password: "cafe123",
+      name: "T-Marbouta Manager",
+      userType: "cafe",
+      cafeID: "cafe_2",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      userID: "owner_3",
+      email: "cafe3@campus.com",
+      password: "cafe123",
+      name: "Kalei Coffee Manager",
+      userType: "cafe",
+      cafeID: "cafe_3",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      userID: "owner_4",
+      email: "cafe4@campus.com",
+      password: "cafe123",
+      name: "Café de Prague Manager",
+      userType: "cafe",
+      cafeID: "cafe_4",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      userID: "owner_5",
+      email: "cafe5@campus.com",
+      password: "cafe123",
+      name: "Tawlet Manager",
+      userType: "cafe",
+      cafeID: "cafe_5",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      userID: "owner_6",
+      email: "cafe6@campus.com",
+      password: "cafe123",
+      name: "Urbanista Manager",
+      userType: "cafe",
+      cafeID: "cafe_6",
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  // Sample discounts for some cafes
+  const sampleDiscounts = [
+    {
+      discountID: "disc_1",
+      cafeID: "cafe_1",
+      percentage: 20,
+      description: "Student Special",
+      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      applicableFor: ["student"],
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      discountID: "disc_2",
+      cafeID: "cafe_2",
+      percentage: 15,
+      description: "Staff Discount",
+      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      applicableFor: ["staff"],
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      discountID: "disc_3",
+      cafeID: "cafe_3",
+      percentage: 25,
+      description: "Campus Community Deal",
+      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      applicableFor: ["student", "staff"],
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  // Combine all users
+  const allUsers = [...demoUsers, ...cafeOwners];
+
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(allUsers));
+  localStorage.setItem(STORAGE_KEYS.CAFES, JSON.stringify(lebaneseCafes));
+  localStorage.setItem(STORAGE_KEYS.DISCOUNTS, JSON.stringify(sampleDiscounts));
   localStorage.setItem(STORAGE_KEYS.PENDING_CAFES, JSON.stringify([]));
   localStorage.setItem(STORAGE_KEYS.INITIALIZED, "true");
 };
@@ -64,14 +264,13 @@ export const createUser = (
     cafeID: null,
     studentID: studentID || null,
     studentIDPhoto: studentIDPhoto || null,
-    verified: userType === "student" || userType === "staff" ? false : null, // Students and staff need verification
+    verified: userType === "student" || userType === "staff" ? false : null,
     createdAt: new Date().toISOString(),
   };
 
   users.push(newUser);
   localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
 
-  // If user is a cafe owner, create a PENDING cafe request
   if (userType === "cafe") {
     createPendingCafe(
       newUser.userID,
@@ -155,7 +354,7 @@ export const createPendingCafe = (
     photo: cafePhoto,
     location: cafeLocation,
     address: cafeAddress,
-    status: "pending", // pending, approved, rejected
+    status: "pending",
     createdAt: new Date().toISOString(),
   };
 
@@ -183,7 +382,6 @@ export const approveCafe = (pendingID) => {
 
   const pendingCafe = pendingCafes[cafeIndex];
 
-  // Create actual cafe
   const cafeID = `cafe_${Date.now()}`;
   const newCafe = {
     cafeID,
@@ -198,12 +396,10 @@ export const approveCafe = (pendingID) => {
     createdAt: new Date().toISOString(),
   };
 
-  // Add to cafes
   const cafes = getAllCafes();
   cafes.push(newCafe);
   localStorage.setItem(STORAGE_KEYS.CAFES, JSON.stringify(cafes));
 
-  // Update user with cafe ID
   const users = getAllUsers();
   const userIndex = users.findIndex((u) => u.userID === pendingCafe.userID);
   if (userIndex !== -1) {
@@ -211,7 +407,6 @@ export const approveCafe = (pendingID) => {
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
   }
 
-  // Remove from pending
   pendingCafes.splice(cafeIndex, 1);
   localStorage.setItem(
     STORAGE_KEYS.PENDING_CAFES,
@@ -274,7 +469,7 @@ export const updateCafeDetails = (cafeID, updates) => {
   return cafes[cafeIndex];
 };
 
-// Discount Management - UPDATED to support user types
+// Discount Management
 export const getAllDiscounts = () => {
   initializeData();
   return JSON.parse(localStorage.getItem(STORAGE_KEYS.DISCOUNTS) || "[]");
@@ -290,7 +485,7 @@ export const createDiscount = (
   percentage,
   description,
   validUntil,
-  applicableFor = ["student", "staff"] // NEW: which user types can use this discount
+  applicableFor = ["student", "staff"]
 ) => {
   const discounts = getAllDiscounts();
 
@@ -302,7 +497,7 @@ export const createDiscount = (
     validUntil,
     applicableFor: Array.isArray(applicableFor)
       ? applicableFor
-      : [applicableFor], // Ensure it's an array
+      : [applicableFor],
     isActive: true,
     createdAt: new Date().toISOString(),
   };
@@ -321,7 +516,6 @@ export const updateDiscount = (discountID, updates) => {
     throw new Error("Discount not found");
   }
 
-  // Ensure applicableFor is always an array
   if (updates.applicableFor && !Array.isArray(updates.applicableFor)) {
     updates.applicableFor = [updates.applicableFor];
   }
@@ -344,7 +538,6 @@ export const deleteDiscount = (discountID) => {
   );
 };
 
-// NEW: Get active discount for cafe based on user type
 export const getActiveDiscountForCafe = (cafeID, userType = null) => {
   const discounts = getDiscountsByCafe(cafeID);
   const now = new Date();
@@ -353,18 +546,15 @@ export const getActiveDiscountForCafe = (cafeID, userType = null) => {
     (d) => d.isActive && new Date(d.validUntil) > now
   );
 
-  // If userType is provided, filter by applicable user types
   if (userType) {
     return activeDiscounts.find(
       (d) => d.applicableFor && d.applicableFor.includes(userType)
     );
   }
 
-  // Otherwise return any active discount
   return activeDiscounts[0] || null;
 };
 
-// NEW: Check if cafe has any active discounts (regardless of user type)
 export const cafeHasActiveDiscounts = (cafeID) => {
   const discounts = getDiscountsByCafe(cafeID);
   const now = new Date();

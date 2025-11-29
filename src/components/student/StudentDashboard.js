@@ -10,7 +10,10 @@ import {
   User,
   Briefcase,
   Tag,
+  Smartphone,
+  Monitor,
 } from "lucide-react";
+import QRCode from "react-qr-code";
 import {
   getAllCafes,
   getActiveDiscountForCafe,
@@ -22,16 +25,29 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
   const [cafes, setCafes] = useState([]);
   const [selectedCafe, setSelectedCafe] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     loadCafes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    checkIfMobile();
+
+    // Listen for window resize
+    window.addEventListener("resize", checkIfMobile);
+    return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
+
+  const checkIfMobile = () => {
+    const mobile =
+      window.innerWidth < 768 ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+    setIsMobile(mobile);
+  };
 
   const loadCafes = () => {
     const allCafes = getAllCafes();
 
-    // Add discount info to each cafe
     const cafesWithDiscounts = allCafes.map((cafe) => {
       const userDiscount = getActiveDiscountForCafe(
         cafe.cafeID,
@@ -41,8 +57,8 @@ const StudentDashboard = () => {
 
       return {
         ...cafe,
-        userDiscount, // Discount applicable to current user
-        hasAnyDiscount, // Whether cafe has ANY active discount
+        userDiscount,
+        hasAnyDiscount,
       };
     });
 
@@ -73,6 +89,44 @@ const StudentDashboard = () => {
       <Briefcase className="w-5 h-5" />
     );
   };
+
+  const getMoodStyles = (mood) => {
+    switch (mood) {
+      case "Calm":
+        return "bg-green-100 border-green-300 text-green-700";
+      case "Moderate":
+        return "bg-orange-100 border-orange-300 text-orange-700";
+      case "Crowded":
+        return "bg-red-100 border-red-300 text-red-700";
+      default:
+        return "bg-gray-100 border-gray-300 text-gray-700";
+    }
+  };
+
+  const getMoodEmoji = (mood) => {
+    switch (mood) {
+      case "Calm":
+        return "😊";
+      case "Moderate":
+        return "🙂";
+      case "Crowded":
+        return "😓";
+      default:
+        return "😊";
+    }
+  };
+
+  const qrData = selectedCafe
+    ? JSON.stringify({
+        cafeID: selectedCafe.cafeID,
+        cafeName: selectedCafe.name,
+        discountID: selectedCafe.userDiscount?.discountID,
+        discountPercentage: selectedCafe.userDiscount?.percentage,
+        userID: currentUser.userID,
+        userType: currentUser.userType,
+        timestamp: new Date().toISOString(),
+      })
+    : "";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -123,7 +177,7 @@ const StudentDashboard = () => {
               }`}
             >
               {/* Cafe Photo */}
-              <div className="h-48 bg-gray-200 relative">
+              <div className="h-48 bg-gradient-to-br from-purple-100 to-blue-100 relative flex items-center justify-center">
                 {cafe.photo ? (
                   <img
                     src={cafe.photo}
@@ -131,10 +185,22 @@ const StudentDashboard = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Coffee className="w-16 h-16 text-gray-400" />
-                  </div>
+                  <Coffee className="w-16 h-16 text-purple-400" />
                 )}
+
+                {/* Mood Badge */}
+                <div className="absolute top-3 left-3">
+                  <div
+                    className={`px-3 py-2 rounded-lg border-2 font-medium text-sm flex items-center gap-2 backdrop-blur-sm ${getMoodStyles(
+                      cafe.currentMood
+                    )}`}
+                  >
+                    <span className="text-lg">
+                      {getMoodEmoji(cafe.currentMood)}
+                    </span>
+                    <span>{cafe.currentMood}</span>
+                  </div>
+                </div>
 
                 {/* Discount Badge */}
                 {cafe.userDiscount && (
@@ -252,13 +318,16 @@ const StudentDashboard = () => {
         )}
       </main>
 
-      {/* QR Code Modal */}
-      {selectedCafe && (
+      {/* QR Code Modal - Mobile Only */}
+      {selectedCafe && isMobile && (
         <div
           className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedCafe(null)}
         >
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full">
+          <div
+            className="bg-white rounded-2xl p-8 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="text-center">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
                 {selectedCafe.name}
@@ -270,12 +339,14 @@ const StudentDashboard = () => {
                 {selectedCafe.userDiscount.description}
               </p>
 
-              {/* QR Code Placeholder */}
-              <div className="bg-gray-100 p-8 rounded-lg mb-6">
-                <QrCode className="w-32 h-32 mx-auto text-gray-400" />
-                <p className="text-sm text-gray-500 mt-4">
-                  Show this to the cashier
-                </p>
+              {/* QR Code */}
+              <div className="bg-white p-6 rounded-lg mb-6 flex justify-center">
+                <QRCode
+                  value={qrData}
+                  size={200}
+                  level="H"
+                  className="mx-auto"
+                />
               </div>
 
               <div className="text-sm text-gray-500 mb-4">
@@ -285,11 +356,73 @@ const StudentDashboard = () => {
                 ).toLocaleString()}
               </div>
 
+              <p className="text-xs text-gray-500 mb-4">
+                Show this QR code to the cashier to redeem your discount
+              </p>
+
               <button
                 onClick={() => setSelectedCafe(null)}
                 className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all font-medium"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Warning Modal */}
+      {selectedCafe && !isMobile && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedCafe(null)}
+        >
+          <div
+            className="bg-white rounded-2xl p-8 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <Monitor className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                Mobile Device Required
+              </h2>
+              <p className="text-gray-600 mb-6">
+                QR codes can only be displayed on mobile devices. Please open
+                this page on your phone to view and redeem your discount.
+              </p>
+
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <Smartphone className="w-5 h-5 text-blue-600" />
+                  <p className="text-sm font-semibold text-blue-800">
+                    How to access on mobile:
+                  </p>
+                </div>
+                <ol className="text-left text-sm text-blue-700 space-y-2">
+                  <li>1. Open your browser on your phone</li>
+                  <li>2. Navigate to this website</li>
+                  <li>3. Log in with your account</li>
+                  <li>4. Click "Show QR Code" for any cafe</li>
+                </ol>
+              </div>
+
+              <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <p className="text-sm text-gray-700 mb-2">
+                  <strong>{selectedCafe.name}</strong>
+                </p>
+                <p className="text-2xl font-bold text-purple-600 mb-1">
+                  {selectedCafe.userDiscount.percentage}% OFF
+                </p>
+                <p className="text-xs text-gray-600">
+                  {selectedCafe.userDiscount.description}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setSelectedCafe(null)}
+                className="w-full px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all font-medium"
+              >
+                Got it
               </button>
             </div>
           </div>

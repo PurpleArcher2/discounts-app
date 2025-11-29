@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = (email, password) => {
     try {
       const user = loginUser(email, password);
       setCurrentUser(user);

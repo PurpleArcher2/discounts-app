@@ -1,7 +1,16 @@
 import React, { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { Coffee, LogIn, Mail, Lock, AlertCircle } from "lucide-react";
+import {
+  Coffee,
+  LogIn,
+  Mail,
+  Lock,
+  AlertCircle,
+  User,
+  Briefcase,
+  ShoppingBag,
+} from "lucide-react";
 
 const Login = () => {
   const { login } = useAuth();
@@ -13,15 +22,13 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (email, password) => {
     setError("");
     setLoading(true);
 
     try {
-      const user = await login(formData.email, formData.password);
+      const user = await login(email, password);
 
-      // Redirect based on user type
       if (user.userType === "admin") {
         navigate("/admin");
       } else if (user.userType === "student") {
@@ -30,8 +37,13 @@ const Login = () => {
         } else {
           navigate("/student/dashboard");
         }
+      } else if (user.userType === "staff") {
+        if (user.verified === false) {
+          navigate("/pending-verification");
+        } else {
+          navigate("/student/dashboard");
+        }
       } else if (user.userType === "cafe") {
-        // Check if cafe is approved by checking if they have a cafeID
         if (!user.cafeID) {
           navigate("/pending-approval");
         } else {
@@ -43,6 +55,16 @@ const Login = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await handleLogin(formData.email, formData.password);
+  };
+
+  const quickLogin = async (email, password) => {
+    setFormData({ email, password });
+    await handleLogin(email, password);
   };
 
   return (
@@ -133,17 +155,83 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Admin Demo Credentials */}
-        <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <p className="text-xs font-medium text-gray-700 mb-2">
-            Demo Admin Credentials:
+        {/* Demo Accounts */}
+        <div className="mt-6 p-4 bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
+          <p className="text-sm font-bold text-gray-800 mb-3 text-center">
+            🎭 Demo Accounts - Click to Auto-Fill
           </p>
-          <p className="text-xs text-gray-600">
-            Email: <span className="font-mono">admin@campus.com</span>
-          </p>
-          <p className="text-xs text-gray-600">
-            Password: <span className="font-mono">admin123</span>
-          </p>
+
+          {/* Student Account */}
+          <button
+            onClick={() => quickLogin("student@campus.com", "student123")}
+            className="w-full mb-2 p-3 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg transition-all text-left"
+          >
+            <div className="flex items-center gap-3">
+              <User className="w-5 h-5 text-purple-600" />
+              <div>
+                <p className="text-sm font-semibold text-gray-800">
+                  Student Account
+                </p>
+                <p className="text-xs text-gray-600 font-mono">
+                  student@campus.com
+                </p>
+              </div>
+            </div>
+          </button>
+
+          {/* Staff Account */}
+          <button
+            onClick={() => quickLogin("staff@campus.com", "staff123")}
+            className="w-full mb-2 p-3 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg transition-all text-left"
+          >
+            <div className="flex items-center gap-3">
+              <Briefcase className="w-5 h-5 text-blue-600" />
+              <div>
+                <p className="text-sm font-semibold text-gray-800">
+                  Staff Account
+                </p>
+                <p className="text-xs text-gray-600 font-mono">
+                  staff@campus.com
+                </p>
+              </div>
+            </div>
+          </button>
+
+          {/* Cafe Accounts */}
+          <div className="mt-3 pt-3 border-t border-purple-200">
+            <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <ShoppingBag className="w-4 h-4" />
+              Cafe Owner Accounts:
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { name: "Café Younes", num: 1 },
+                { name: "T-Marbouta", num: 2 },
+                { name: "Kalei Coffee", num: 3 },
+                { name: "Café Prague", num: 4 },
+                { name: "Tawlet", num: 5 },
+                { name: "Urbanista", num: 6 },
+              ].map((cafe) => (
+                <button
+                  key={cafe.num}
+                  onClick={() =>
+                    quickLogin(`cafe${cafe.num}@campus.com`, "cafe123")
+                  }
+                  className="p-2 bg-white hover:bg-green-50 border border-green-200 rounded text-left transition-all"
+                >
+                  <p className="text-xs font-medium text-gray-800">
+                    {cafe.name}
+                  </p>
+                  <p className="text-xs text-gray-500 font-mono">
+                    cafe{cafe.num}@...
+                  </p>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-2 text-center">
+              All cafes use password: <span className="font-mono">cafe123</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
