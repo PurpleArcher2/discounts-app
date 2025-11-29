@@ -31,12 +31,13 @@ const DiscountManager = ({ cafeID, discounts = [], onDiscountsChange }) => {
         // Update existing discount
         await updateDiscount(editingDiscount.discountID, formData);
       } else {
-        // Create new discount
+        // Create new discount - ADD the applicableFor parameter
         await createDiscount(
           cafeID,
           formData.percentage,
           formData.description,
-          formData.validUntil
+          formData.validUntil,
+          ["student", "staff"] // ADD THIS LINE - default to both user types
         );
       }
 
