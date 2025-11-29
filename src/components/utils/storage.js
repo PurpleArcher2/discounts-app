@@ -7,79 +7,31 @@ const STORAGE_KEYS = {
   DISCOUNTS: "discount_discounts",
   CURRENT_USER: "discount_current_user",
   INITIALIZED: "discount_initialized",
+  PENDING_CAFES: "discount_pending_cafes",
 };
 
-// Initialize default data ONLY ONCE
+// Initialize with empty data - NO DEFAULTS
+// Create ONE admin account on first initialization
 const initializeData = () => {
-  // Check if already initialized to prevent overwriting user data
   if (localStorage.getItem(STORAGE_KEYS.INITIALIZED)) {
     return;
   }
 
-  // Create default users
-  const defaultUsers = [
-    {
-      userID: "user_student_demo",
-      email: "student@university.edu",
-      password: "password123",
-      name: "Demo Student",
-      userType: "student",
-      cafeID: null,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      userID: "user_cafe_demo",
-      email: "cafe@campus.com",
-      password: "password123",
-      name: "Campus Coffee Manager",
-      userType: "cafe",
-      cafeID: "cafe1",
-      createdAt: new Date().toISOString(),
-    },
-  ];
-  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(defaultUsers));
+  // Create admin user
+  const adminUser = {
+    userID: "admin_default",
+    email: "admin@campus.com",
+    password: "admin123", // Change this in production!
+    name: "System Administrator",
+    userType: "admin",
+    cafeID: null,
+    createdAt: new Date().toISOString(),
+  };
 
-  // Create default cafes
-  const defaultCafes = [
-    {
-      cafeID: "cafe1",
-      name: "Campus Coffee Manager's Cafe",
-      logo: "☕",
-      location: "Main Building, 1st Floor",
-      currentMood: "Calm",
-      ownerID: "user_cafe_demo",
-      createdAt: new Date().toISOString(),
-    },
-  ];
-  localStorage.setItem(STORAGE_KEYS.CAFES, JSON.stringify(defaultCafes));
-
-  // Create ONLY discounts for the demo cafe owner's cafe
-  const defaultDiscounts = [
-    {
-      discountID: "disc1",
-      cafeID: "cafe1",
-      percentage: 15,
-      description: "Student Special",
-      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      isActive: true,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      discountID: "disc2",
-      cafeID: "cafe1",
-      percentage: 20,
-      description: "Morning Rush Deal",
-      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      isActive: false,
-      createdAt: new Date().toISOString(),
-    },
-  ];
-  localStorage.setItem(
-    STORAGE_KEYS.DISCOUNTS,
-    JSON.stringify(defaultDiscounts)
-  );
-
-  // Mark as initialized
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify([adminUser]));
+  localStorage.setItem(STORAGE_KEYS.CAFES, JSON.stringify([]));
+  localStorage.setItem(STORAGE_KEYS.DISCOUNTS, JSON.stringify([]));
+  localStorage.setItem(STORAGE_KEYS.PENDING_CAFES, JSON.stringify([]));
   localStorage.setItem(STORAGE_KEYS.INITIALIZED, "true");
 };
 
@@ -89,13 +41,16 @@ export const createUser = (
   password,
   name,
   userType,
+  studentID = "",
+  studentIDPhoto = "",
   cafeName = "",
-  cafeLocation = ""
+  cafeLocation = "",
+  cafePhoto = "",
+  cafeAddress = ""
 ) => {
   initializeData();
   const users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || "[]");
 
-  // Check if user already exists
   if (users.find((u) => u.email === email)) {
     throw new Error("User already exists");
   }
@@ -103,38 +58,28 @@ export const createUser = (
   const newUser = {
     userID: `user_${Date.now()}`,
     email,
-    password, // In production, this should be hashed
+    password,
     name,
-    userType, // 'student' or 'cafe'
+    userType,
     cafeID: null,
+    studentID: studentID || null,
+    studentIDPhoto: studentIDPhoto || null,
+    verified: userType === "student" || userType === "staff" ? false : null, // Students and staff need verification
     createdAt: new Date().toISOString(),
   };
 
   users.push(newUser);
   localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
 
-  // If user is a cafe owner, create a new cafe for them
+  // If user is a cafe owner, create a PENDING cafe request
   if (userType === "cafe") {
-    const cafeID = `cafe_${Date.now()}`;
-    const newCafe = createCafeForUser(
+    createPendingCafe(
       newUser.userID,
-      cafeID,
       cafeName || name,
-      cafeLocation
+      cafeLocation,
+      cafePhoto,
+      cafeAddress
     );
-
-    // Update user with their cafe ID
-    newUser.cafeID = cafeID;
-    const updatedUsers = JSON.parse(
-      localStorage.getItem(STORAGE_KEYS.USERS) || "[]"
-    );
-    const userIndex = updatedUsers.findIndex(
-      (u) => u.userID === newUser.userID
-    );
-    if (userIndex !== -1) {
-      updatedUsers[userIndex].cafeID = cafeID;
-      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(updatedUsers));
-    }
   }
 
   return { ...newUser, password: undefined };
@@ -168,6 +113,128 @@ export const logoutUser = () => {
   localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
 };
 
+export const getAllUsers = () => {
+  initializeData();
+  return JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || "[]");
+};
+
+export const verifyStudent = (userID) => {
+  const users = getAllUsers();
+  const userIndex = users.findIndex((u) => u.userID === userID);
+
+  if (userIndex === -1) {
+    throw new Error("User not found");
+  }
+
+  users[userIndex].verified = true;
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+  return users[userIndex];
+};
+
+export const rejectStudent = (userID) => {
+  const users = getAllUsers();
+  const filteredUsers = users.filter((u) => u.userID !== userID);
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(filteredUsers));
+};
+
+// Pending Cafe Management
+export const createPendingCafe = (
+  userID,
+  cafeName,
+  cafeLocation,
+  cafePhoto,
+  cafeAddress
+) => {
+  const pendingCafes = getPendingCafes();
+
+  const newPendingCafe = {
+    pendingID: `pending_${Date.now()}`,
+    userID,
+    name: cafeName,
+    photo: cafePhoto,
+    location: cafeLocation,
+    address: cafeAddress,
+    status: "pending", // pending, approved, rejected
+    createdAt: new Date().toISOString(),
+  };
+
+  pendingCafes.push(newPendingCafe);
+  localStorage.setItem(
+    STORAGE_KEYS.PENDING_CAFES,
+    JSON.stringify(pendingCafes)
+  );
+
+  return newPendingCafe;
+};
+
+export const getPendingCafes = () => {
+  initializeData();
+  return JSON.parse(localStorage.getItem(STORAGE_KEYS.PENDING_CAFES) || "[]");
+};
+
+export const approveCafe = (pendingID) => {
+  const pendingCafes = getPendingCafes();
+  const cafeIndex = pendingCafes.findIndex((c) => c.pendingID === pendingID);
+
+  if (cafeIndex === -1) {
+    throw new Error("Pending cafe not found");
+  }
+
+  const pendingCafe = pendingCafes[cafeIndex];
+
+  // Create actual cafe
+  const cafeID = `cafe_${Date.now()}`;
+  const newCafe = {
+    cafeID,
+    name: pendingCafe.name,
+    photo: pendingCafe.photo,
+    location: pendingCafe.location,
+    address: pendingCafe.address,
+    lat: null,
+    lng: null,
+    currentMood: "Calm",
+    ownerID: pendingCafe.userID,
+    createdAt: new Date().toISOString(),
+  };
+
+  // Add to cafes
+  const cafes = getAllCafes();
+  cafes.push(newCafe);
+  localStorage.setItem(STORAGE_KEYS.CAFES, JSON.stringify(cafes));
+
+  // Update user with cafe ID
+  const users = getAllUsers();
+  const userIndex = users.findIndex((u) => u.userID === pendingCafe.userID);
+  if (userIndex !== -1) {
+    users[userIndex].cafeID = cafeID;
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+  }
+
+  // Remove from pending
+  pendingCafes.splice(cafeIndex, 1);
+  localStorage.setItem(
+    STORAGE_KEYS.PENDING_CAFES,
+    JSON.stringify(pendingCafes)
+  );
+
+  return newCafe;
+};
+
+export const rejectCafe = (pendingID, reason = "") => {
+  const pendingCafes = getPendingCafes();
+  const filteredCafes = pendingCafes.filter((c) => c.pendingID !== pendingID);
+  localStorage.setItem(
+    STORAGE_KEYS.PENDING_CAFES,
+    JSON.stringify(filteredCafes)
+  );
+};
+
+export const getCafePendingStatus = (userID) => {
+  const pendingCafes = getPendingCafes();
+  return pendingCafes.find((c) => c.userID === userID);
+};
+
 // Cafe Management
 export const getAllCafes = () => {
   initializeData();
@@ -193,80 +260,21 @@ export const updateCafeMood = (cafeID, mood) => {
   return cafes[cafeIndex];
 };
 
-export const assignCafeToUser = (userID, cafeID) => {
-  const users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || "[]");
-  const userIndex = users.findIndex((u) => u.userID === userID);
-
-  if (userIndex === -1) {
-    throw new Error("User not found");
-  }
-
-  users[userIndex].cafeID = cafeID;
-  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-
+export const updateCafeDetails = (cafeID, updates) => {
   const cafes = getAllCafes();
   const cafeIndex = cafes.findIndex((c) => c.cafeID === cafeID);
-  if (cafeIndex !== -1) {
-    cafes[cafeIndex].ownerID = userID;
-    localStorage.setItem(STORAGE_KEYS.CAFES, JSON.stringify(cafes));
+
+  if (cafeIndex === -1) {
+    throw new Error("Cafe not found");
   }
-};
 
-// Create a new cafe for a user
-export const createCafeForUser = (
-  userID,
-  cafeID,
-  cafeName,
-  cafeLocation = ""
-) => {
-  const cafes = getAllCafes();
-
-  // Generate a random emoji for the cafe logo
-  const cafeEmojis = [
-    "☕",
-    "🍵",
-    "🧋",
-    "🥤",
-    "🍰",
-    "🧁",
-    "🥐",
-    "🍪",
-    "🍩",
-    "🥯",
-  ];
-  const randomEmoji = cafeEmojis[Math.floor(Math.random() * cafeEmojis.length)];
-
-  // Default location if not provided
-  const locations = [
-    "Main Building, Ground Floor",
-    "Library Building, 2nd Floor",
-    "Student Center, East Wing",
-    "Science Block, Cafeteria",
-    "Arts Building, Lobby",
-    "Engineering Wing, 1st Floor",
-    "Medical Campus, Ground Floor",
-    "Sports Complex, Ground Floor",
-  ];
-  const defaultLocation =
-    cafeLocation || locations[Math.floor(Math.random() * locations.length)];
-
-  const newCafe = {
-    cafeID,
-    name: cafeName,
-    logo: randomEmoji,
-    location: defaultLocation,
-    currentMood: "Calm",
-    ownerID: userID,
-    createdAt: new Date().toISOString(),
-  };
-
-  cafes.push(newCafe);
+  cafes[cafeIndex] = { ...cafes[cafeIndex], ...updates };
   localStorage.setItem(STORAGE_KEYS.CAFES, JSON.stringify(cafes));
 
-  return newCafe;
+  return cafes[cafeIndex];
 };
 
-// Discount Management
+// Discount Management - UPDATED to support user types
 export const getAllDiscounts = () => {
   initializeData();
   return JSON.parse(localStorage.getItem(STORAGE_KEYS.DISCOUNTS) || "[]");
@@ -277,7 +285,13 @@ export const getDiscountsByCafe = (cafeID) => {
   return discounts.filter((d) => d.cafeID === cafeID);
 };
 
-export const createDiscount = (cafeID, percentage, description, validUntil) => {
+export const createDiscount = (
+  cafeID,
+  percentage,
+  description,
+  validUntil,
+  applicableFor = ["student", "staff"] // NEW: which user types can use this discount
+) => {
   const discounts = getAllDiscounts();
 
   const newDiscount = {
@@ -286,6 +300,9 @@ export const createDiscount = (cafeID, percentage, description, validUntil) => {
     percentage: parseInt(percentage),
     description,
     validUntil,
+    applicableFor: Array.isArray(applicableFor)
+      ? applicableFor
+      : [applicableFor], // Ensure it's an array
     isActive: true,
     createdAt: new Date().toISOString(),
   };
@@ -302,6 +319,11 @@ export const updateDiscount = (discountID, updates) => {
 
   if (discountIndex === -1) {
     throw new Error("Discount not found");
+  }
+
+  // Ensure applicableFor is always an array
+  if (updates.applicableFor && !Array.isArray(updates.applicableFor)) {
+    updates.applicableFor = [updates.applicableFor];
   }
 
   discounts[discountIndex] = { ...discounts[discountIndex], ...updates };
@@ -322,16 +344,36 @@ export const deleteDiscount = (discountID) => {
   );
 };
 
-export const getActiveDiscountForCafe = (cafeID) => {
+// NEW: Get active discount for cafe based on user type
+export const getActiveDiscountForCafe = (cafeID, userType = null) => {
   const discounts = getDiscountsByCafe(cafeID);
   const now = new Date();
 
-  return discounts.find((d) => d.isActive && new Date(d.validUntil) > now);
+  const activeDiscounts = discounts.filter(
+    (d) => d.isActive && new Date(d.validUntil) > now
+  );
+
+  // If userType is provided, filter by applicable user types
+  if (userType) {
+    return activeDiscounts.find(
+      (d) => d.applicableFor && d.applicableFor.includes(userType)
+    );
+  }
+
+  // Otherwise return any active discount
+  return activeDiscounts[0] || null;
 };
 
-// Real-time simulation (for demo purposes)
+// NEW: Check if cafe has any active discounts (regardless of user type)
+export const cafeHasActiveDiscounts = (cafeID) => {
+  const discounts = getDiscountsByCafe(cafeID);
+  const now = new Date();
+
+  return discounts.some((d) => d.isActive && new Date(d.validUntil) > now);
+};
+
+// Real-time simulation
 export const subscribeToChanges = (callback) => {
-  // Simulate real-time updates by polling every 2 seconds
   const interval = setInterval(() => {
     callback();
   }, 2000);
@@ -339,7 +381,7 @@ export const subscribeToChanges = (callback) => {
   return () => clearInterval(interval);
 };
 
-// Utility function to reset all data (useful for testing)
+// Utility function to reset all data
 export const resetDatabase = () => {
   Object.values(STORAGE_KEYS).forEach((key) => {
     localStorage.removeItem(key);

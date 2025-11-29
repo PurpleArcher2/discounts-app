@@ -1,10 +1,10 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import {
-  getCurrentUser,
-  loginUser,
   createUser,
+  loginUser,
   logoutUser,
-} from "../utils/storage";
+  getCurrentUser,
+} from "../components/utils/storage";
 
 const AuthContext = createContext();
 
@@ -21,7 +21,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing user session
     const user = getCurrentUser();
     setCurrentUser(user);
     setLoading(false);
@@ -32,8 +31,12 @@ export const AuthProvider = ({ children }) => {
     password,
     name,
     userType,
-    cafeName,
-    cafeLocation
+    studentID = "",
+    studentIDPhoto = "",
+    cafeName = "",
+    cafeLocation = "",
+    cafePhoto = "",
+    cafeAddress = ""
   ) => {
     try {
       const user = createUser(
@@ -41,8 +44,12 @@ export const AuthProvider = ({ children }) => {
         password,
         name,
         userType,
+        studentID,
+        studentIDPhoto,
         cafeName,
-        cafeLocation
+        cafeLocation,
+        cafePhoto,
+        cafeAddress
       );
       setCurrentUser(user);
       return user;
@@ -71,7 +78,6 @@ export const AuthProvider = ({ children }) => {
     signup,
     login,
     logout,
-    loading,
   };
 
   return (

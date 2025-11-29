@@ -1,70 +1,66 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Coffee, TrendingUp, Users, Calendar } from "lucide-react";
-import MoodSelector from "./MoodSelector";
-import DiscountManager from "./DiscountManager";
-import QRGenerator from "./QRGenerator";
 import {
-  getAllCafes,
-  getCafeById,
-  getDiscountsByCafe,
-  updateCafeMood,
-  getActiveDiscountForCafe,
-  subscribeToChanges,
-} from "../utils/storage";
+  LogOut,
+  Coffee,
+  Settings as SettingsIcon,
+  Percent,
+} from "lucide-react";
+import { getCafeById } from "../utils/storage";
+
+// Import components - comment these out if they cause errors
+import CafeSettings from "./CafeSettings";
+import DiscountManager from "./DiscountManager";
 
 const CafeDashboard = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
-  const [cafe, setCafe] = useState(null);
-  const [discounts, setDiscounts] = useState([]);
-  const [activeDiscount, setActiveDiscount] = useState(null);
+  const [currentCafe, setCurrentCafe] = useState(null);
+  const [activeTab, setActiveTab] = useState("discounts");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    initializeCafe();
-
-    // Subscribe to real-time updates
-    const unsubscribe = subscribeToChanges(() => {
-      loadCafeData();
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const initializeCafe = async () => {
-    try {
-      loadCafeData();
-    } catch (error) {
-      console.error("Failed to initialize cafe:", error);
-      setLoading(false);
-    }
-  };
+    console.log("CafeDashboard mounted");
+    console.log("Current user:", currentUser);
+    loadCafeData();
+  }, [currentUser]);
 
   const loadCafeData = () => {
     try {
-      const cafeData = getCafeById(currentUser.cafeID);
-      const cafeDiscounts = getDiscountsByCafe(currentUser.cafeID);
-      const active = getActiveDiscountForCafe(currentUser.cafeID);
+      console.log("Loading cafe data...");
 
-      setCafe(cafeData);
-      setDiscounts(cafeDiscounts);
-      setActiveDiscount(active);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to load cafe data:", error);
-      setLoading(false);
-    }
-  };
+      if (!currentUser) {
+        console.log("No current user");
+        setLoading(false);
+        setError("No user logged in");
+        return;
+      }
 
-  const handleMoodChange = async (mood) => {
-    try {
-      await updateCafeMood(currentUser.cafeID, mood);
-      loadCafeData();
-    } catch (error) {
-      console.error("Failed to update mood:", error);
-      throw error;
+      if (!currentUser.cafeID) {
+        console.log("User has no cafeID:", currentUser);
+        setLoading(false);
+        setError("No cafe associated with this account");
+        return;
+      }
+
+      console.log("Fetching cafe with ID:", currentUser.cafeID);
+      const cafe = getCafeById(currentUser.cafeID);
+      console.log("Cafe found:", cafe);
+
+      if (!cafe) {
+        setError("Cafe not found in database");
+        setLoading(false);
+        return;
+      }
+
+      setCurrentCafe(cafe);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error loading cafe:", err);
+      setError(`Error: ${err.message}`);
+      setLoading(false);
     }
   };
 
@@ -73,27 +69,46 @@ const CafeDashboard = () => {
     navigate("/login");
   };
 
+  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen gradient-bg flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Coffee className="w-16 h-16 text-purple-600 mx-auto mb-4 animate-pulse" />
+          <p className="text-gray-600">Loading your cafe...</p>
+          <p className="text-xs text-gray-400 mt-2">
+            User: {currentUser?.email}
+          </p>
+        </div>
       </div>
     );
   }
 
-  if (!cafe) {
+  // Error state
+  if (error || !currentCafe) {
     return (
-      <div className="min-h-screen gradient-bg flex items-center justify-center">
-        <div className="bg-white rounded-xl p-8 text-center max-w-md">
-          <Coffee className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-md bg-white p-8 rounded-xl shadow-md">
+          <Coffee className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            No Cafe Assigned
+            {error || "Cafe Not Found"}
           </h2>
-          <p className="text-gray-600 mb-4">
-            Please contact an administrator to get a cafe assigned to your
-            account.
-          </p>
-          <button onClick={handleLogout} className="btn-primary">
+          <div className="text-left bg-gray-50 p-4 rounded-lg mb-4">
+            <p className="text-sm text-gray-600 mb-2">Debug Info:</p>
+            <p className="text-xs text-gray-500">
+              User ID: {currentUser?.userID}
+            </p>
+            <p className="text-xs text-gray-500">
+              Cafe ID: {currentUser?.cafeID || "None"}
+            </p>
+            <p className="text-xs text-gray-500">
+              User Type: {currentUser?.userType}
+            </p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all"
+          >
             Back to Login
           </button>
         </div>
@@ -101,123 +116,83 @@ const CafeDashboard = () => {
     );
   }
 
-  // Calculate statistics
-  const totalDiscounts = discounts.length;
-  const activeDiscountsCount = discounts.filter(
-    (d) => d.isActive && new Date(d.validUntil) > new Date()
-  ).length;
-  const avgDiscount =
-    discounts.length > 0
-      ? Math.round(
-          discounts.reduce((sum, d) => sum + d.percentage, 0) / discounts.length
-        )
-      : 0;
-
+  // Main dashboard
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-md sticky top-0 z-30">
+      <header className="bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="text-5xl">{cafe.logo}</div>
+            <div className="flex items-center gap-3">
+              <Coffee className="w-8 h-8" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">
-                  {cafe.name}
-                </h1>
-                <p className="text-sm text-gray-600">{cafe.location}</p>
+                <h1 className="text-2xl font-bold">{currentCafe.name}</h1>
+                <p className="text-sm text-purple-100">
+                  Owner: {currentUser.name}
+                </p>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
             >
               <LogOut className="w-5 h-5" />
-              <span className="hidden md:inline">Logout</span>
+              <span>Logout</span>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <Users className="w-8 h-8 opacity-80" />
-              <span className="text-3xl font-bold">{totalDiscounts}</span>
-            </div>
-            <p className="text-blue-100">Total Discounts</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <TrendingUp className="w-8 h-8 opacity-80" />
-              <span className="text-3xl font-bold">{activeDiscountsCount}</span>
-            </div>
-            <p className="text-green-100">Active Discounts</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <Calendar className="w-8 h-8 opacity-80" />
-              <span className="text-3xl font-bold">{avgDiscount}%</span>
-            </div>
-            <p className="text-purple-100">Average Discount</p>
+      {/* Tabs */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex gap-4">
+            <button
+              onClick={() => setActiveTab("discounts")}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
+                activeTab === "discounts"
+                  ? "border-purple-600 text-purple-600 font-medium"
+                  : "border-transparent text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              <Percent className="w-5 h-5" />
+              <span>Manage Discounts</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("settings")}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
+                activeTab === "settings"
+                  ? "border-purple-600 text-purple-600 font-medium"
+                  : "border-transparent text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              <SettingsIcon className="w-5 h-5" />
+              <span>Cafe Settings</span>
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Mood Selector */}
-        <MoodSelector
-          currentMood={cafe.currentMood}
-          onMoodChange={handleMoodChange}
-        />
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {activeTab === "discounts" && (
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
+              Discount Manager
+            </h2>
+            <p className="text-gray-600 mb-4">Cafe ID: {currentCafe.cafeID}</p>
+            <DiscountManager cafeID={currentCafe.cafeID} />
+          </div>
+        )}
 
-        {/* Discount Manager */}
-        <DiscountManager
-          cafeID={cafe.cafeID}
-          discounts={discounts}
-          onDiscountsChange={loadCafeData}
-        />
-
-        {/* QR Generator */}
-        <QRGenerator cafeData={cafe} discount={activeDiscount} />
-
-        {/* Instructions */}
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-            <Coffee className="w-6 h-6 text-indigo-600" />
-            How It Works
-          </h3>
-          <ol className="space-y-2 text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="font-bold text-indigo-600">1.</span>
-              <span>
-                Update your cafe's current mood to let students know how busy
-                you are
-              </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="font-bold text-indigo-600">2.</span>
-              <span>
-                Create discounts with custom percentages and descriptions
-              </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="font-bold text-indigo-600">3.</span>
-              <span>
-                Generate and print QR codes for students to scan at your counter
-              </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="font-bold text-indigo-600">4.</span>
-              <span>
-                Students will see your discounts in real-time on their mobile
-                devices
-              </span>
-            </li>
-          </ol>
-        </div>
+        {activeTab === "settings" && (
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
+              Cafe Settings
+            </h2>
+            <CafeSettings cafe={currentCafe} onUpdate={loadCafeData} />
+          </div>
+        )}
       </main>
     </div>
   );

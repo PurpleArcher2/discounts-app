@@ -5,22 +5,23 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { AuthProvider, useAuth } from "./components/contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 import StudentDashboard from "./components/student/StudentDashboard";
 import CafeDashboard from "./components/cafe/CafeDashboard";
+import AdminDashboard from "./components/admin/AdminDashboard";
+import { PendingApproval } from "./components/approvals/PendingApproval";
+import { PendingVerification } from "./components/approvals/PendingVerification";
 
-// Protected Route Component
+// Protected Route
 const ProtectedRoute = ({ children, allowedUserType }) => {
   const { currentUser } = useAuth();
 
-  if (!currentUser) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!currentUser) return <Navigate to="/login" replace />;
 
   if (allowedUserType && currentUser.userType !== allowedUserType) {
-    // Redirect to appropriate dashboard based on user type
     const redirectPath =
       currentUser.userType === "student"
         ? "/student/dashboard"
@@ -31,7 +32,7 @@ const ProtectedRoute = ({ children, allowedUserType }) => {
   return children;
 };
 
-// Public Route Component (redirects if already logged in)
+// Public Route
 const PublicRoute = ({ children }) => {
   const { currentUser } = useAuth();
 
@@ -49,10 +50,12 @@ const PublicRoute = ({ children }) => {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Default redirect */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* Public routes */}
+      <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/pending-verification" element={<PendingVerification />} />
+      <Route path="/pending-approval" element={<PendingApproval />} />
+
       <Route
         path="/login"
         element={
@@ -70,7 +73,6 @@ function AppRoutes() {
         }
       />
 
-      {/* Student routes */}
       <Route
         path="/student/dashboard"
         element={
@@ -80,7 +82,6 @@ function AppRoutes() {
         }
       />
 
-      {/* Cafe routes */}
       <Route
         path="/cafe/dashboard"
         element={
@@ -90,7 +91,6 @@ function AppRoutes() {
         }
       />
 
-      {/* 404 fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

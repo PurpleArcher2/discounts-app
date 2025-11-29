@@ -14,7 +14,7 @@ import {
   deleteDiscount,
 } from "../utils/storage";
 
-const DiscountManager = ({ cafeID, discounts, onDiscountsChange }) => {
+const DiscountManager = ({ cafeID, discounts = [], onDiscountsChange }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingDiscount, setEditingDiscount] = useState(null);
   const [formData, setFormData] = useState({
