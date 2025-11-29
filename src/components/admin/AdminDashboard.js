@@ -21,7 +21,7 @@ import {
 } from "../utils/storage";
 
 const AdminDashboard = () => {
-  const { currentUser, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const [pendingStudents, setPendingStudents] = useState([]);
   const [pendingStaff, setPendingStaff] = useState([]);
